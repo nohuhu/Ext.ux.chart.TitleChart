@@ -1,0 +1,28 @@
+Ext.ux.chart.TitleChart
+======================
+
+This class is an extension for Ext.chart.Chart that implements a titled
+chart.
+
+Usage is straightforward: in your source, replace 'chart' xtype with
+'titlechart' and assign 'title' property. Other optional properties are:
+
+    - titleLocation: 'left', 'right', 'top' or 'bottom'. Title text
+      will be rotated accordingly when location is right or left.
+
+    - titleFont: font properties for chart title, in CSS format.
+
+    - titlePadding: space between chart canvas edge and title,
+      in pixels.
+
+    - titleMargin: space between title and actual chart area.
+
+Note that this class is based on Ext.ux.chart.Chart class, which is
+basically the same as Ext.chart.Chart except that some methods were
+refactored for better reuse.
+
+This extension is released under GPL 3.0 license, except for
+Ext.ux.chart.Chart class which is provided as an example. Commercial
+licensing is also available.
+
+Copyright (c) 2011 by Alexander Tokarev, <nohuhu@nohuhu.org>.
