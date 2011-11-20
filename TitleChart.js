@@ -1,5 +1,5 @@
 /*
-    Ext JS extension that implements a Chart with a repositionable Title.
+    Ext JS 4 extension that implements a Chart with a repositionable Title.
     
     Version 0.9.
     
