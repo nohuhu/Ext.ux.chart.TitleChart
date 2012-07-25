@@ -22,7 +22,10 @@ basically the same as Ext.chart.Chart except that some methods were
 refactored for better reuse.
 
 This extension is released under GPL 3.0 license, except for
-Ext.ux.chart.Chart class which is provided as an example. Commercial
-licensing is also available.
+Ext.ux.chart.Chart class which is released under Sencha license.
 
-Copyright (c) 2011 by Alexander Tokarev, <nohuhu@nohuhu.org>.
+Commercial use is permitted to the extent that the code/component(s) do NOT
+become part of another Open Source or Commercially licensed development library
+or toolkit without explicit permission.
+
+Copyright (c) 2011-2012 by Alexander Tokarev, <nohuhu@nohuhu.org>.

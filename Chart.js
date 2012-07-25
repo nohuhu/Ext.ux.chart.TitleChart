@@ -45,7 +45,9 @@ Ext.define('Ext.ux.chart.Chart', {
         insets = me.getInsets();
 
         // Find the space needed by axes and legend as a positive inset from each edge
-        Ext.each(edges, function(edge) {
+        for ( var i = 0, l = edges.length; i < l; i++ ) {
+            var edge = edges[i];
+            
             var isVertical = (edge === 'left' || edge === 'right'),
                 axis = getAxis(edge),
                 bbox;
@@ -64,7 +66,7 @@ Ext.define('Ext.ux.chart.Chart', {
                 bbox = axis.bbox;
                 insets[edge] += (isVertical ? bbox.width : bbox.height);
             }
-        });
+        };
         
         return insets;
     },
@@ -76,7 +78,7 @@ Ext.define('Ext.ux.chart.Chart', {
      */
     alignAxes: function() {
         var me = this,
-            axes = me.axes,
+            axesItems = me.axes.items,
             insets,
             chartBBox;
         
@@ -93,16 +95,15 @@ Ext.define('Ext.ux.chart.Chart', {
 
         // Go back through each axis and set its length and position based on the
         // corresponding edge of the chartBBox
-        axes.each(function(axis) {
-            var pos = axis.position,
+        for ( var i = 0, l = axesItems.length; i < l; i++ ) {
+            var axis = axesItems[i],
+                pos = axis.position,
                 isVertical = (pos === 'left' || pos === 'right');
 
             axis.x = (pos === 'right' ? chartBBox.x + chartBBox.width : chartBBox.x);
             axis.y = (pos === 'top' ? chartBBox.y : chartBBox.y + chartBBox.height);
             axis.width = (isVertical ? chartBBox.width : chartBBox.height);
             axis.length = (isVertical ? chartBBox.height : chartBBox.width);
-        });
+        };
     }
 });
-
-//@ sourceURL=uxChart.js

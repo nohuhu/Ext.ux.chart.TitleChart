@@ -1,29 +1,25 @@
 /*
-    Ext JS 4 extension that implements a Chart with a repositionable Title.
-    
-    Version 0.9.
-    
-    Copyright (C) 2011 Alexander Tokarev.
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * Ext JS 4 extension that implements a Chart with a repositionable Title.
+ *  
+ * Version 0.99.
+ *  
+ * Copyright (C) 2011-2012 Alexander Tokarev.
+ *
+ * This code is licensed under the terms of the Open Source LGPL 3.0 license.
+ * Commercial use is permitted to the extent that the code/component(s) do NOT
+ * become part of another Open Source or Commercially licensed development library
+ * or toolkit without explicit permission.
+ * 
+ * License details: http://www.gnu.org/licenses/lgpl.html
 */
 
 Ext.define('Ext.ux.chart.TitleChart', {
     extend: 'Ext.ux.chart.Chart',
     alias:  'widget.titlechart',
     
-    requires: [ 'Ext.util.Format' ],
+    requires: [
+        'Ext.draw.Sprite'
+    ],
     
     /*
      * @cfg {String} Title text for this Chart.
@@ -67,7 +63,7 @@ Ext.define('Ext.ux.chart.TitleChart', {
             
             edge      = me.titleLocation;
             titleBBox = me.titleSprite.getBBox();
-            offset    = Ext.util.Format.round( titleBBox.height / 4, 0 );
+            offset    = Math.round( titleBBox.height / 4 );
             
             insets[edge] += edge == 'left' || edge == 'right' ? titleBBox.width
                           :                                     titleBBox.height
@@ -119,6 +115,31 @@ Ext.define('Ext.ux.chart.TitleChart', {
     },
     
     /**
+     * @private Re-draws the title Sprite, if necessary.
+     */
+    redrawTitleSprite: function() {
+        var me = this,
+            sprite = me.titleSprite,
+            attr;
+            
+        if ( me.title === false && sprite ) {
+            me.titleSprite.hide(true);
+            me.titleSprite.destroy();
+            me.titleSprite = undefined;
+            
+            return;
+        };
+        
+        if ( !sprite ) {
+            return me.drawTitleSprite();
+        };
+        
+        attr = me.getTitleAttributes(sprite);
+        
+        sprite.setAttributes(attr, true);
+    },
+    
+    /**
      * @private
      * This method instantiates a text Sprite to display Chart title.
      */
@@ -126,7 +147,7 @@ Ext.define('Ext.ux.chart.TitleChart', {
         var me = this,
             sprite;
         
-        sprite = Ext.create('Ext.draw.Sprite', {
+        sprite = new Ext.draw.Sprite({
             type: 'text',
             text: me.title,
             font: me.titleFont,
@@ -142,23 +163,7 @@ Ext.define('Ext.ux.chart.TitleChart', {
         sprite.redraw();
         sprite.hide(true);
         
-        var coord = me.calcTitleCoordinates(sprite);
-        
-        // Now combine attributes to position the Sprite and rotate it if it's vertical
-        var attr = {
-            x: coord.x,
-            y: coord.y
-        };
-        
-        if ( coord.vertical ) {
-            Ext.apply(attr, {
-                rotate: {
-                    x:       coord.rotateX,
-                    y:       coord.rotateY,
-                    degrees: coord.degrees
-                }
-            });
-        };
+        var attr = me.getTitleAttributes(sprite);
         
         // We don't need to redraw the Sprite yet
         sprite.setAttributes(attr, false);
@@ -170,55 +175,72 @@ Ext.define('Ext.ux.chart.TitleChart', {
      * @private
      * Calculate title sprite coordinates.
      */
-    calcTitleCoordinates: function(sprite) {
+    getTitleAttributes: function(sprite) {
         var me = this,
             surface = me.surface,
             width = surface.width,
             height = surface.height,
             chartBBox = me.chartBBox || { x: 0, y: 0 },
+            padding = me.titlePadding,
             uround = Ext.util.Format.round,
-            titleBBox,
-            offset, x = 0, y = 0, degrees;
+            titleBBox, titleX, titleY, titleHeight, titleWidth, offset,
+            x = 0, y = 0, degrees = 0;
         
-        titleBBox  = sprite.getBBox();
-        offset = uround( titleBBox.height / 2, 0 );
+        titleBBox = sprite.getBBox();
+        titleX    = titleBBox.x;
+        titleY    = titleBBox.y;
+        
+        // Normalize dimensions
+        if ( sprite.isVertical ) {
+            titleHeight = titleBBox.width;
+            titleWidth  = titleBBox.height;
+        }
+        else {
+            titleHeight = titleBBox.height;
+            titleWidth  = titleBBox.width;
+        };
+        
+        offset = uround( titleHeight / 2, 0 );
 
         switch ( me.titleLocation ) {
         case 'top':
-            x = uround( (width - titleBBox.width) / 2, 0 );
-            y = titleBBox.height - offset + me.titlePadding;
+            x = uround( (width - titleWidth) / 2, 0 );
+            y = titleHeight - offset + padding;
             break;
         case 'left':
-            x = offset + me.titlePadding;
+            x = offset + padding;
             // Leftmost title needs to be centered vertically -- and rotated, too
-            y = uround( ((height - titleBBox.width) / 2) + titleBBox.width, 0 );
+            y = uround( ((height - titleWidth) / 2) + titleWidth, 0 );
             degrees = 270;
             break;
         case 'right':
-            x = width - offset - me.titlePadding;
+            x = width - offset - padding;
             // Rightmost title needs to be centered vertically
-            y = uround( (height - titleBBox.width) / 2, 0 );
+            y = uround( (height - titleWidth) / 2, 0 );
             degrees = 90;
             break;
         case 'bottom':
-            x = uround( (width - titleBBox.width) / 2, 0 );
-            y = height - offset - me.titlePadding;
+            x = uround( (width - titleWidth) / 2, 0 );
+            y = height - offset - padding;
             break;
         default:
             x = 0;
             y = 0;
             sprite.hidden = true;   // XXX Shouldn't do this
         };
+        
+        sprite.isVertical = me.titleLocation == 'left' || me.titleLocation == 'right';
 
         return {
-            x:        x,
-            y:        y,
-            width:    titleBBox.width,
-            height:   titleBBox.height,
-            vertical: me.titleLocation == 'left' || me.titleLocation == 'right',
-            rotateX:  x,
-            rotateY:  y,
-            degrees:  degrees
+            x:      x,
+            y:      y,
+            width:  titleWidth,
+            height: titleHeight,
+            rotate: {
+                x:        x,
+                y:        y,
+                degrees: degrees
+            }
         };
     },
     
@@ -229,7 +251,7 @@ Ext.define('Ext.ux.chart.TitleChart', {
         var me = this;
 
         // Draw the title first so other elements can adjust their positions
-        me.drawTitleSprite();
+        me.redrawTitleSprite();
         
         me.callParent(arguments);
     }
